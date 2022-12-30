@@ -5,6 +5,7 @@ import re
 import os
 import string
 import nltk
+import numpy as np
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('wordnet')
@@ -12,6 +13,15 @@ nltk.download('omw-1.4')
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer
    
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
 
 def clean_text(text):
     '''Make text lowercase, remove text in square brackets,remove links,remove punctuation
@@ -54,28 +64,87 @@ def preprocess_data(text):
     
     return text
 
+def forward_Indexing():
+    # Loading Data
+    listOfArticles = []
+    listOfJson = os.listdir('articles_dataset\json\\nela-gt-2021\\newsdata\\train')
 
-# Loading Data
-listOfArticles = []
-listOfJson = os.listdir('articles_dataset\json\\nela-gt-2021\\newsdata\\train')
+    start_time = time.time()
 
-# for fil in listOfJson:
-#     fhand = open(f'articles_dataset\json\\nela-gt-2021\\newsdata\\train\\{fil}', 'r')
-#     x = fhand.read()
+    forward_Barrel = {}
+    for fil in listOfJson:
+        fhand = open(f'articles_dataset\json\\nela-gt-2021\\newsdata\\train\\{fil}', 'r')
+        x = fhand.read()
 
-#     x = json.loads(x)
-#     listOfArticles = listOfArticles + x
-#     fhand.close()
-fil = listOfJson[0]
+        listOfArticles = json.loads(x)
 
-fhand = open(f'articles_dataset\json\\nela-gt-2021\\newsdata\\train\\{fil}', 'r')
-x = fhand.read()
+        fhand.close()
 
-x = json.loads(x)
-listOfArticles = listOfArticles + x
-fhand.close()
+        for article in listOfArticles:
 
-start_time = time.time()
+            # corpus = [preprocess_data(article['content']) for article in listOfArticles]
+            clean_title = [preprocess_data(article['title'])]
+
+            # corpus = [clean_title[0]+preprocess_data(listOfArticles[0]['content'])]  -- dont need to add clean text to the corpus just yet
+            corpus = [preprocess_data(article['content'])]
+            clean_title = [ct.split() for ct in clean_title]
+            # print(clean_title)
+            try:
+                X = vectorizer.fit_transform(corpus)
+            except:
+                continue
+            word_bank = vectorizer.get_feature_names_out()
+
+            X = X.toarray()
+            # print(X.shape)
+
+
+            forward_index = {}
+            for i,j in zip(word_bank, X[0]):
+                forward_index[i] = [j, []]
+
+            for word, pos in zip(corpus[0].split(), range(1,len(corpus[0].split())+1)):
+                try:
+                    forward_index[word][1].append(pos)
+                except:
+                    try:
+                        word = word.strip('’') # "’", '‘', '”', '“'
+                        word = word.strip('‘')
+                        word = word.strip('”')
+                        word = word.strip('“')
+                        forward_index[word][1].append(pos)
+                    except:
+                        continue
+                
+
+
+            for title in clean_title[0]:
+                try:
+                    forward_index[title][1].insert(0, 0)
+                    forward_index[title][0] += 1
+                except:
+                    forward_index[title] = [1, [0]]
+
+            # to find the position we will loop through the content until we find the word the number of times it occurs
+            # print(forward_index)
+
+            # some words' position failed to be added to the to the index so we assigned a value of -1 for them; -1 indicating that position is unknown
+            for w in forward_index.keys():
+                if forward_index[w][0] > len(forward_index[w][1]):
+                    forward_index[w][1] += [-1] * (forward_index[w][0]-len(forward_index[w][1]))
+
+            forward_Barrel[article['url']] = forward_index
+
+    print('time taken for forward indexing:', time.time() - start_time)
+
+    # f_index = json.dumps(forward_Barrel, cls=NpEncoder)
+
+    # with open('forward_index.json', 'w') as fhand:
+    #     fhand.write(f_index)
+
+    print("Number of articles in the forward index:", len(forward_Barrel.keys()))
+
+    return forward_Barrel
 
 #load the english language stop words list
 stop_words = stopwords.words('english')
@@ -84,42 +153,6 @@ stop_words = stopwords.words('english')
 more_stopwords = ['u', 'im', 'c', 'll', "’", '‘', '”', '“']
 stop_words = stop_words + more_stopwords
 
-# # Lemmitization
 lemmatizer = WordNetLemmatizer() # defining lemmitizer object
-
-# corpus = [preprocess_data(article['content']) for article in listOfArticles]
-clean_title = [preprocess_data(listOfArticles[0]['title'])]
-
-# length_of_title = [len(clean_title[0])]
-corpus = [clean_title[0]+preprocess_data(listOfArticles[0]['content'])]
-clean_title = [ct.split() for ct in clean_title]
-# print(clean_title)
-# print(corpus[0], '\n')
-
 vectorizer = CountVectorizer()
-
-X = vectorizer.fit_transform(corpus)
-word_bank = vectorizer.get_feature_names_out()
-
-X = X.toarray()
-print(X.shape)
-
-
-number_of_occurences = {}
-for i,j in zip(word_bank, X[0]):
-    number_of_occurences[i] = [j, [1]*j]
-
-
-
-
-
-
-
-
-
-
-
-
-# to find the position we will loop through the content until we find the word the number of times it occurs
-print(number_of_occurences)
-print('time taken:', time.time() - start_time)
+# print(forward_Indexing())
