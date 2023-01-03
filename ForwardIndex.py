@@ -64,16 +64,16 @@ def preprocess_data(text):
     
     return text
 
-def forward_Indexing():
+def forward_Indexing(path = 'articles_dataset\json\\nela-gt-2021\\newsdata\\train\\'):
     # Loading Data
     listOfArticles = []
-    listOfJson = os.listdir('articles_dataset\json\\nela-gt-2021\\newsdata\\train')
+    listOfJson = os.listdir(path)
 
     start_time = time.time()
 
     forward_Barrel = {}
     for fil in listOfJson:
-        fhand = open(f'articles_dataset\json\\nela-gt-2021\\newsdata\\train\\{fil}', 'r')
+        fhand = open(path + fil, 'r')
         x = fhand.read()
 
         listOfArticles = json.loads(x)
@@ -153,6 +153,6 @@ stop_words = stopwords.words('english')
 more_stopwords = ['u', 'im', 'c', 'll', "’", '‘', '”', '“']
 stop_words = stop_words + more_stopwords
 
-lemmatizer = WordNetLemmatizer() # defining lemmitizer object
+lemmatizer = WordNetLemmatizer() # defining lemmitizer object 
 vectorizer = CountVectorizer()
 # print(forward_Indexing())

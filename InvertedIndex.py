@@ -1,26 +1,40 @@
 from ForwardIndex import *
-from collections import defaultdict
 import json
+import shutil
 import time
 
 def create_lexicon(forward_index):
     # initialize lexicon
     lexicon = {}
+    for char in 'abcdefghijklmnopqrstuvwxyz':
+        lexicon[char] = {}
+    lexicon['other'] = {}
 
     # for doc_id, word_data in forward_index.items():
     for doc_id in forward_index.keys():
         for word_id, data in zip(forward_index[doc_id].keys(), forward_index[doc_id].items()):
             # print(data)
             num_occurrences, hits = data
-            try:
-                lexicon[word_id][0] += 1
-            except:
-                lexicon[word_id] = [1]
-            try:
-                lexicon[word_id][1][doc_id] = hits
-            except:
-                lexicon[word_id].append({})
-                lexicon[word_id][1][doc_id] = hits
+            if word_id[0] in 'abcdefghijklmnopqrstuvwxyz':
+                try:
+                    lexicon[word_id[0]][word_id][0] += 1
+                except:
+                    lexicon[word_id[0]][word_id] = [1]
+                try:
+                    lexicon[word_id[0]][word_id][1][doc_id] = hits
+                except:
+                    lexicon[word_id[0]][word_id].append({})
+                    lexicon[word_id[0]][word_id][1][doc_id] = hits
+            else:
+                try:
+                    lexicon['other'][word_id][0] += 1
+                except:
+                    lexicon['other'][word_id] = [1]
+                try:
+                    lexicon['other'][word_id][1][doc_id] = hits
+                except:
+                    lexicon['other'][word_id].append({})
+                    lexicon['other'][word_id][1][doc_id] = hits
 
     return lexicon
 
@@ -30,11 +44,16 @@ start_time = time.time()
 lexi = create_lexicon(forwardBarrel)
 print("Time taken for inverted indexing:", time.time()-start_time)
 
-i_index = json.dumps(create_lexicon(forwardBarrel), cls=NpEncoder, indent=2)
+start_time = time.time()
 
-with open('Inverted_index.json', 'w') as fhand:
-    fhand.write(i_index)
-
+if os.path.exists('Barrels'):
+    shutil.rmtree('Barrels')
+os.mkdir('Barrels')
+for barrel in lexi.keys():
+    with open(f'Barrels\Inverted_index{barrel}.json', 'w') as fhand:
+        i_index = json.dumps(lexi[barrel], indent=2, cls=NpEncoder)
+        fhand.write(i_index)
+print("Time taken for writing to Lexicon:", time.time()-start_time)
 
 
 # import json
