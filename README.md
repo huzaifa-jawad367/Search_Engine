@@ -32,3 +32,20 @@ The project could not be completed in the given time frame only single word sear
 $DocScore = frequency * np.sum(1 - np.array([positions])/LengthOfArticle)$
 
 The inverted index json file was too big to uppload on either LMS or github
+
+## Future Work to be done
+* Improve search relevancy: Experiment with different ranking algorithms or techniques to enhance the relevancy of search results. Consider incorporating machine learning algorithms or natural language processing techniques to better understand user queries and improve the ranking of search results accordingly.
+
+* Expand data sources: Currently, your search engine may be based on a limited set of articles. Consider expanding the scope by crawling and indexing more diverse sources of information, such as websites, blogs, forums, or social media platforms. This will provide users with a wider range of search results.
+
+* User interface enhancements: Enhance the user interface to provide a more intuitive and user-friendly search experience. Consider implementing features like autocomplete suggestions, search filters, or advanced search options to help users refine their queries and find relevant information more efficiently.
+
+* Incorporate query logs and user feedback: Analyze user search logs and feedback to gain insights into user behavior and preferences. Use this information to improve search results, personalize recommendations, or identify popular topics that can be highlighted in the search interface.
+
+* Implement advanced features: Consider adding features such as spelling correction, synonym expansion, query expansion, or semantic search to make the search engine more robust and capable of handling variations in user queries. These features can help improve the accuracy and relevance of search results.
+
+* Explore scalability and performance: Optimize your search engine for scalability and performance. As the volume of indexed documents and user queries increases, ensure that your system can handle the load efficiently. Explore techniques such as distributed indexing, caching, or parallel processing to improve the overall performance of the search engine.
+
+* Integration with external tools: Explore integrating your search engine with other tools or platforms. For example, you could integrate with a recommendation system to provide personalized search results or integrate with a content management system to enable indexing and searching within specific domains or repositories.
+
+* Mobile and voice search: Adapt your search engine to support mobile devices and voice-based interactions. Develop a mobile-friendly interface or create a voice-enabled search capability to cater to users who prefer using their smartphones or voice assistants for search.
